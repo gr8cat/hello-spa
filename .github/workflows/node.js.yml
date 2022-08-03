@@ -31,7 +31,7 @@ jobs:
         cache: 'npm'
     #- run: npm ci
     - run: npm install -g @angular/cli@9.1.0
-    - run: npm install -g @angular-devkit/build-angular
+    - run: npm install --save-dev @angular-devkit/build-angular
     - run: npm run test
     
   
