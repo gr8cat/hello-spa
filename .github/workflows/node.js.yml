@@ -24,10 +24,10 @@ jobs:
     - uses: mr-smithers-excellent/docker-build-push@v5
       name: Build & push Docker image
       with:
-        image: myrepo/hello-spa
-        tags: v1, latest
+        image: gr8cat/hello-spa
+        #tags: v1, latest
         registry: docker.io
-        dockerfile: docker/Dockerfile
+        #dockerfile: docker/Dockerfile
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
         
