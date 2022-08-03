@@ -21,6 +21,7 @@ jobs:
   docker-build:
     runs-on: self-hosted
     steps:
+    - uses: actions/checkout@v3
     - uses: mr-smithers-excellent/docker-build-push@v5
       name: Build & push Docker image
       with:
