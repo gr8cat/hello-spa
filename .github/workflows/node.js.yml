@@ -30,7 +30,7 @@ jobs:
         node-version: 13.12
         cache: 'npm'
     #- run: npm ci
-    - run: npm install -g @angular/cli@13.12
+    - run: npm install -g @angular/cli@13.2.5
     - run: npm run test
     
   
