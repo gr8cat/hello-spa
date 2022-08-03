@@ -27,6 +27,6 @@ jobs:
         node-version: 13.12
         cache: 'npm'
     - run: npm ci
-    - run: npm run test:ci
+    - run: npm run test
     
   
