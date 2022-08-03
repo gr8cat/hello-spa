@@ -40,6 +40,7 @@ jobs:
         node-version: 13.12
         cache: 'npm'
   #  #- run: npm ci
+    - run: npm i -D puppeteer karma-chrome-launcher
     - run: npm install -g @angular/cli@9.1.0
     - run: npm install --save-dev @angular-devkit/build-angular
     - run: npm run test
