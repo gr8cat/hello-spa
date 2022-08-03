@@ -27,7 +27,7 @@ jobs:
         image: gr8cat/hello-spa
         #tags: v1, latest
         registry: docker.io
-        #dockerfile: docker/Dockerfile
+        dockerfile: docker/Dockerfile
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
         
