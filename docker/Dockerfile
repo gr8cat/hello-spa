@@ -6,5 +6,5 @@ RUN npm install
 COPY . .
 RUN npm run build
 ### STAGE 2: Run ###
-FROM nginx:1.23.1-alpine
+FROM nginx:1.17.9-alpine
 COPY --from=build /usr/src/app/dist/hello-spa /usr/share/nginx/html
