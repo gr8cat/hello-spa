@@ -20,13 +20,15 @@ jobs:
   testssh:
     runs-on: self-hosted
     steps:
-    - name: Execute SSH commmands on remote server
-      uses: JimCronqvist/action-ssh@master
+    - uses: appleboy/ssh-action@master
       with:
-        hosts: 'vagrant@192.168.56.5'
-        privateKey: ${{ secrets.PRIVATE_KEY }}
-        debug: false
-        command: "echo ok"
+        host: 192.168.56.5
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.PRIVATE_KEY }}
+        port: 22
+        script: |
+          whoami
+          ls -al
   
   docker-build:
     runs-on: self-hosted
