@@ -27,7 +27,7 @@ jobs:
       name: Build & push Docker image
       with:
         image: hello-spa
-        #tags: v1, latest
+        tags: v1, latest
         registry: registry.gr8cat.io:5000
         dockerfile: docker/Dockerfile
         username: ${{ secrets.REGISTRY_USERNAME }}
