@@ -29,8 +29,8 @@ jobs:
         #tags: v1, latest
         registry: localhost:5000
         dockerfile: docker/Dockerfile
-        username: ${{ secrets.MYDOCKER_USERNAME }}
-        password: ${{ secrets.MYDOCKER_PASSWORD }}
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
         
   #test:
   #  runs-on: self-hosted
