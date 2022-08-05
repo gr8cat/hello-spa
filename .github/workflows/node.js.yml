@@ -17,6 +17,15 @@ jobs:
   #      cache: 'npm'
   #  - run: npm install
   #  - run: npm run build
+  testssh:
+    runs-on: self-hosted
+    steps:
+    - name: Execute SSH commmands on remote server
+      uses: JimCronqvist/action-ssh@master
+      with:
+        hosts: 'vagrant@192.168.56.5'
+        privateKey: ${{ secrets.PRIVATE_KEY }}
+        command: "echo ok"
   
   docker-build:
     runs-on: self-hosted
@@ -31,6 +40,8 @@ jobs:
         dockerfile: docker/Dockerfile
         username: ${{ secrets.REGISTRY_USERNAME }}
         password: ${{ secrets.REGISTRY_PASSWORD }}
+        
+        
         
   #test:
   #  runs-on: self-hosted
