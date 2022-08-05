@@ -46,7 +46,6 @@ jobs:
         password: ${{ secrets.REGISTRY_PASSWORD }}
         
         
-        
   #test:
   #  runs-on: self-hosted
   #  steps:
