@@ -17,7 +17,24 @@ jobs:
   #      cache: 'npm'
   #  - run: npm install
   #  - run: npm run build
-  testssh:
+  
+  build:
+    #needs: testssh
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@v3
+    - uses: mr-smithers-excellent/docker-build-push@v5
+      name: Build & push Docker image
+      with:
+        image: hello-spa
+        #tags: v1, latest
+        registry: registry.gr8cat.io:5000
+        dockerfile: docker/Dockerfile
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+        
+  deploy:
+    needs: build
     runs-on: self-hosted
     steps:
     - uses: appleboy/ssh-action@master
@@ -35,23 +52,7 @@ jobs:
           echo $REG_PASS | docker login registry.gr8cat.io:5000 --username $REG_USER --password-stdin
           docker pull registry.gr8cat.io:5000/hello-spa
           docker run -d registry.gr8cat.io:5000/hello-spa
-  
-  docker-build:
-    needs: testssh
-    runs-on: self-hosted
-    steps:
-    - uses: actions/checkout@v3
-    - uses: mr-smithers-excellent/docker-build-push@v5
-      name: Build & push Docker image
-      with:
-        image: hello-spa
-        #tags: v1, latest
-        registry: registry.gr8cat.io:5000
-        dockerfile: docker/Dockerfile
-        username: ${{ secrets.REGISTRY_USERNAME }}
-        password: ${{ secrets.REGISTRY_PASSWORD }}
-        
-        
+       
   #test:
   #  runs-on: self-hosted
   #  steps:
