@@ -29,6 +29,7 @@ jobs:
         script: |
           whoami
           ls -al
+          
   
   docker-build:
     needs: testssh
