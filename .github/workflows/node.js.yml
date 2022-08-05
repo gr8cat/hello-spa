@@ -32,8 +32,8 @@ jobs:
         script: |
           docker ps
           docker login 192.168.56.4:500 -u $REG_USER -p $REG_PASS
-          docker pull 192.168.56.4:5000/hello-spa
-          docker run -d 192.168.56.4:5000/hello-spa
+          docker pull localhost:5000/hello-spa
+          docker run -d localhost:5000/hello-spa
   
   docker-build:
     needs: testssh
