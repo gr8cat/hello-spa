@@ -51,7 +51,7 @@ jobs:
           docker ps
           echo $REG_PASS | docker login registry.gr8cat.io:5000 --username $REG_USER --password-stdin
           docker pull registry.gr8cat.io:5000/hello-spa
-          docker run -d registry.gr8cat.io:5000/hello-spa
+          docker run -d -p 8080:8080 registry.gr8cat.io:5000/hello-spa
      
   #test:
   #  runs-on: self-hosted
