@@ -25,7 +25,7 @@ jobs:
         REG_USER: ${{ secrets.REGISTRY_USERNAME }}
         REG_PASS: ${{ secrets.REGISTRY_PASSWORD }}
       with:
-        host: 192.168.56.5
+        host: appserver.gr8cat.io
         username: vagrant
         key: ${{ secrets.PRIVATE_KEY }}
         port: 22
