@@ -27,9 +27,9 @@ jobs:
         key: ${{ secrets.PRIVATE_KEY }}
         port: 22
         script: |
-          whoami
-          ls -al
-          
+          docker ps
+          docker pull 192.168.56.4:5000/hello-spa
+          docker run -d 192.168.56.4:5000/hello-spa
   
   docker-build:
     needs: testssh
