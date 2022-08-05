@@ -23,7 +23,7 @@ jobs:
     - uses: appleboy/ssh-action@master
       with:
         host: 192.168.56.5
-        username: ${{ secrets.USERNAME }}
+        username: vagrant
         key: ${{ secrets.PRIVATE_KEY }}
         port: 22
         script: |
