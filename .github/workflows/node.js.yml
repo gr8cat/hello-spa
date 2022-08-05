@@ -25,6 +25,7 @@ jobs:
       with:
         hosts: 'vagrant@192.168.56.5'
         privateKey: ${{ secrets.PRIVATE_KEY }}
+        debug: false
         command: "echo ok"
   
   docker-build:
