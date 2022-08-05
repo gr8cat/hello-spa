@@ -32,9 +32,9 @@ jobs:
         envs: REG_USER,REG_PASS
         script: |
           docker ps
-          echo $REG_PASS | docker login 192.168.56.4:5000 --username $REG_USER --password-stdin
-          docker pull localhost:5000/hello-spa
-          docker run -d localhost:5000/hello-spa
+          echo $REG_PASS | docker login registry.gr8cat.io:5000 --username $REG_USER --password-stdin
+          docker pull registry.gr8cat.io:5000/hello-spa
+          docker run -d registry.gr8cat.io:5000/hello-spa
   
   docker-build:
     needs: testssh
@@ -46,7 +46,7 @@ jobs:
       with:
         image: hello-spa
         #tags: v1, latest
-        registry: localhost:5000
+        registry: registry.gr8cat.io:5000
         dockerfile: docker/Dockerfile
         username: ${{ secrets.REGISTRY_USERNAME }}
         password: ${{ secrets.REGISTRY_PASSWORD }}
