@@ -29,6 +29,7 @@ jobs:
         username: vagrant
         key: ${{ secrets.PRIVATE_KEY }}
         port: 22
+        envs: REG_USER,REG_PASS
         script: |
           docker ps
           echo $REG_PASS | docker login 192.168.56.4:5000 --username $REG_USER --password-stdin
