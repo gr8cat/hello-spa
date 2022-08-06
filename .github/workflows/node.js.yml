@@ -57,7 +57,7 @@ jobs:
           fi
           docker run -d -p 8080:80 --name hello-spa registry.gr8cat.io:5000/hello-spa
 
-  #test:
+  #test: 
   #  runs-on: self-hosted
   #  steps:
   #  - uses: actions/checkout@v3
