@@ -54,6 +54,7 @@ jobs:
           if [[ $result -eq 0 ]]; then
             docker stop hello-spa
             docker rm hello-spa
+            docker run -d -p 8080:80 --name hello-spa registry.gr8cat.io:5000/hello-spa
           else
             docker run -d -p 8080:80 --name hello-spa registry.gr8cat.io:5000/hello-spa
           fi   
