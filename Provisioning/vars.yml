@@ -1,0 +1,13 @@
+v_access_token: ghp_....
+v_owner: gr8cat
+v_repo: hello-spa
+v_runner_dir: /home/vagrant/runner
+v_runner_version: v2.294.0
+v_runner_file: actions-runner-linux-x64-2.294.0.tar.gz
+v_runner_file_chsum: sha256:a19a09f4eda5716e5d48ba86b6b78fc014880c5619b9dba4a059eaf65e131780
+v_registry_username: xxxx
+v_registry_password: yyyy
+v_ip_registry: 192.168.56.4
+v_ip_appserver: 192.168.56.5
+v_hostname_registry: registry.gr8cat.io
+v_hostname_appserver: appserver.gr8cat.io

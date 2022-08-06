@@ -1,0 +1,295 @@
+- hosts: all
+  vars_files: vars.yml
+  tasks:
+    - name: configure hosts
+      block:  
+        - name: add ip and hostname runner to hosts file
+          lineinfile:
+            path: /etc/hosts
+            line: "{{ v_ip_registry }} {{ v_hostname_registry }}"
+            state: present
+
+        - name: add ip and hostname appserver to hosts file
+          lineinfile:
+            path: /etc/hosts
+            line: "{{ v_ip_appserver }} {{ v_hostname_appserver }}"
+            state: present
+      become: yes
+      become_user: root
+      become_method: sudo
+
+    - name: get list of runners
+      uri:
+        url: "https://api.github.com/repos/{{ v_owner }}/{{ v_repo }}/actions/runners"
+        headers:
+          Accept: application/vnd.github+json
+          Authorization: "token {{ v_access_token }}" 
+      register: runners_list
+
+    - name: check if runner loclahost exists
+      set_fact:
+        runner_id: "{{ runners_list | json_query(jmesquery) }}"
+      vars:
+        jmesquery: "json.runners[?name == `localhost`].id"
+
+    - name:
+      debug:
+         msg: "{{ runner_id }}"
+
+    - name: delete old runner
+      uri:
+        url: "https://api.github.com/repos/{{ v_owner }}/{{ v_repo }}/actions/runners/{{ runner_id | join('') }}"
+        method: DELETE
+        return_content: yes
+        status_code: [204]
+        headers:
+          Accept: application/vnd.github+json
+          Authorization: "token {{ v_access_token }}"
+      register: delete_result
+      when: runner_id | join('') != ""
+    
+    - name: create directory for runner
+      file:
+        path: "{{ v_runner_dir }}"
+        state: directory
+
+    - name: download runner files
+      get_url:
+        url: "https://github.com/actions/runner/releases/download/{{ v_runner_version }}/{{ v_runner_file }}"
+        dest: "{{ v_runner_dir }}"
+        checksum: "{{ v_runner_file_chsum }}"
+
+    - name: unarchive tar file
+      unarchive:
+        src: "{{ v_runner_dir }}/{{ v_runner_file }}"
+        dest: "{{ v_runner_dir }}"
+
+    - name: remove service
+      shell: "cd {{ v_runner_dir }} && {{ v_runner_dir }}/svc.sh uninstall"
+      ignore_errors: yes
+      become: yes
+      become_user: root
+      become_method: sudo
+      when: runner_id | join('') != ""
+
+    - name: generate registration token
+      uri:
+        url: "https://api.github.com/repos/{{ v_owner }}/{{ v_repo }}/actions/runners/registration-token"
+        method: POST
+        return_content: yes
+        status_code: [201]
+        headers:
+          Accept: application/vnd.github+json
+          Authorization: "token {{ v_access_token }}"
+      register: result
+
+    - name: print result message
+      debug:
+        msg: "{{ result }}"
+
+    - name: set registration token as a fact
+      set_fact:
+        registration_token: "{{ result | json_query(jmesquery) }}"
+      vars:
+        jmesquery: 'json.token'    
+
+    - name: display registration token
+      debug:
+        msg: "{{ registration_token }}"
+
+    - name: remove config
+      shell: "cd {{ v_runner_dir }} && {{ v_runner_dir }}/config.sh remove --token {{ registration_token }}"
+      when: runner_id | join('') != ""
+
+    - name: run runner config
+      shell: "{{ v_runner_dir }}/config.sh --unattended --url https://github.com/{{ v_owner }}/{{ v_repo }} --token {{ registration_token }}  --replace"
+
+    - name: set runner as service and start service
+      block:
+        - name: remove service
+          shell: "cd {{ v_runner_dir }} && {{ v_runner_dir }}/svc.sh uninstall"
+
+        - name: service install
+          shell: "cd {{ v_runner_dir }} && {{ v_runner_dir }}/svc.sh install"
+
+        - name: start service
+          shell: "cd {{ v_runner_dir }} && {{ v_runner_dir }}/svc.sh start"
+      become: yes
+      become_user: root
+      become_method: sudo
+
+    - name: check docker if installed
+      stat:
+        path: /usr/bin/docker
+      register: docker_file
+
+    - name: install docker
+      shell: cd ~ && curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh
+      when: not docker_file.stat.exists
+
+    - name: start docker service
+      ansible.builtin.service:
+        name: docker
+        state: started 
+        enabled: yes
+      become: yes
+      become_user: root
+      become_method: sudo
+
+    - name: add inscecure docker registry 
+      copy:
+        dest: /etc/docker/daemon.json
+        content: |
+          {
+            "insecure-registries" : [ "{{ v_hostname_registry }}:5000" ]
+          }
+      become: yes
+      become_user: root
+      become_method: sudo
+
+    - name: restart docker
+      ansible.builtin.service:
+        name: docker
+        state: restarted
+      become: yes
+      become_user: root
+      become_method: sudo
+
+    - name: add vagrant user to docker group
+      user:
+        name: vagrant
+        groups: docker
+        append: yes
+      become: yes
+      become_user: root
+      become_method: sudo
+
+    - name: reset ssh connection to allow user changes to affect ansible user
+      ansible.builtin.meta:
+        reset_connection
+
+    - name: set permissions on /var/run/docker.sock (workaroud)
+      file:
+        path: /var/run/docker.sock
+        mode: '0666'
+      become: yes
+      become_user: root
+      become_method: sudo
+
+    - name: pull an image
+      shell: docker pull registry
+
+    - name: create directory for registry auth
+      file:
+        path: /home/vagrant/auth
+        state: directory
+
+    - name: create htpasswd file
+      shell: docker run --entrypoint htpasswd httpd:2 -Bbn {{ v_registry_username }} {{ v_registry_password }} > /home/vagrant/auth/htpasswd
+
+    - name: check my-registry container
+      shell: docker ps
+      register: container_list
+
+    - name: check my-registry is 
+      shell: docker ps -a
+      register: container_list_full
+      when: "'my-registry' not in container_list.stdout"
+
+    - name: start registry when stopped
+      shell: docker start my-registry
+      when: "'my-registry' in container_list_full.stdout"
+
+    - name: run registry my-registry
+      shell: > 
+        docker run -d -p 5000:5000 --name my-registry 
+        -v /home/vagrant/auth:/auth 
+        -e "REGISTRY_AUTH=htpasswd" 
+        -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" 
+        -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd 
+        --restart=always
+        registry
+      when: "'my-registry' not in container_list_full.stdout"
+    
+    - name: get public key from github
+      uri:
+        url: "https://api.github.com/repos/{{ v_owner }}/{{ v_repo }}/actions/secrets/public-key"
+        headers:
+          Accept: application/vnd.github+json
+          Authorization: "token {{ v_access_token }}" 
+      register: public_key_info
+
+    - name: show public key info
+      debug:
+        msg: "{{ public_key_info }}"
+
+    - name: set public key variable
+      set_fact:
+        public_key: "{{ public_key_info | json_query(jmesquery) }}"
+      vars:
+        jmesquery: 'json.key' 
+
+    - name: set key id variable
+      set_fact:
+        key_id: "{{ public_key_info | json_query(jmesquery) }}"
+      vars:
+        jmesquery: 'json.key_id'
+
+    - name: show public key
+      debug:
+        msg: "{{ public_key }}"
+
+    - name: get python-pynacl module for encryption
+      get_url:
+        url:  https://cbs.centos.org/kojifiles/packages/python-pynacl/1.3.0/1.el7/x86_64/python2-pynacl-1.3.0-1.el7.x86_64.rpm
+        dest: /vagrant
+        validate_certs: no
+
+    - name: install python-pynacl module from file
+      yum:
+        name: /vagrant/python2-pynacl-1.3.0-1.el7.x86_64.rpm 
+        state: present
+      become: yes
+      become_user: root
+      become_method: sudo
+
+    - name: generate python script for encrypting secrets
+      copy:
+        dest: encrypt.py
+        content: |
+          # script from github.com with changes for python2
+          from base64 import b64encode
+          from nacl import encoding, public
+          import sys
+
+          def encrypt(public_key, secret_value):
+            public_key = public.PublicKey(public_key.encode("utf-8"), encoding.Base64Encoder())
+            sealed_box = public.SealedBox(public_key)
+            encrypted = sealed_box.encrypt(secret_value.encode("utf-8"))
+            return b64encode(encrypted).decode("utf-8")
+
+          print(encrypt(sys.argv[1], sys.argv[2]))
+
+    - name: encrypt registry username
+      shell: "python2.7 ./encrypt.py {{ public_key }} \'{{ v_registry_username }}\'"
+      register: encrypted_registry_username
+
+    - name: encrypt registry password
+      shell: "python2.7 ./encrypt.py {{ public_key }} \'{{ v_registry_password }}\'"
+      register: encrypted_registry_password
+
+    - name: create or update secret with ssh pub key
+      uri:
+        url: "https://api.github.com/repos/{{ v_owner }}/{{ v_repo }}/actions/secrets/{{ item.secret_name }}"
+        method: PUT
+        status_code: [201, 204]
+        headers:
+          Accept: application/vnd.github+json
+          Authorization: "token {{ v_access_token }}" 
+        body_format: json
+        body:
+          { "encrypted_value": "{{ item.value }}",
+            "key_id": "{{ key_id }}" }
+      loop:
+        - { secret_name: 'REGISTRY_USERNAME', value: "{{ encrypted_registry_username.stdout }}" }
+        - { secret_name: 'REGISTRY_PASSWORD', value: "{{ encrypted_registry_password.stdout }}" }
