@@ -49,8 +49,14 @@ jobs:
         script: |
           echo $REG_PASS | docker login registry.gr8cat.io:5000 --username $REG_USER --password-stdin
           docker pull registry.gr8cat.io:5000/hello-spa
-          docker run -d -p 8080:80 registry.gr8cat.io:5000/hello-spa
-     
+          docker container ls | grep -w "hello-spa"
+          result=$?
+          if [[ $result -eq 0 ]]; then
+            docker stop hello-spa
+            docker rm hello-spa
+          else
+            docker run -d -p 8080:80 --name hello-spa registry.gr8cat.io:5000/hello-spa
+          fi   
   #test:
   #  runs-on: self-hosted
   #  steps:
