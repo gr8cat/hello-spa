@@ -9,12 +9,18 @@ Opis komponentów.
 Opis provisioningu:
 
 1.  Runner
-    a. Podczas provisioningu runner automatycznie jest dodawany do Github Actions.
+
+    a. Podczas provisioningu runner automatycznie jest dodawany do Github Actions
+
     b. Instalowane jest prywatne registry
+
     c. konfiguracja secrets (użytkownik i hasło dla registry)
+
     
 2.  Appserver:
+
     a. Instalacja doker
+
     b. konfiguracja secrets (klucz prywatny potrzebny do deploymentu)
     
 
@@ -27,36 +33,54 @@ Ustawienia użytkownika w prawym górnym rogu -> Settings -> (Po lewej na samym 
 Po podaniu hasła podajemy nazwę, definiujemy kiedy wygasa token i wybieramy następujące uprawnienia.
 
 - Repo - mogą być wszystkie opcje
+
 - Workflow
+
 - W sekcji admin:public\_key tylko read:public\_key
+
 
 Kopiujemy token
 
 2.  Konfiguracja parametrów w pliku vars.yml. Plik jest wspólny dla dwóch maszyn.
 
-v\_access\_token - wcześniej wygenerowany token dla repozytorium
-v_owner - nazwa właściciela repozytorium
-v_repo - nazwa repozytorium
-v\_runner\_dir - katalog gdzie będzie instalowany
-v\_runner\_version - wersja runnera
-v\_runner\_file - plik instalacyjny runnera
-v\_runner\_file_chsum - funkcja skrótu dla pliku runnera
-v\_registry\_username - nazwa użytkownika w prywatnym registry
-v\_registry\_password - hasło dla użytkownika w prywatnym registry
-v\_ip\_registry - adres prywatny vagrant dla registry
-v\_ip\_appserver - adres prywatny vagrant dla serwera aplikacyjnego
-v\_hostname\_registry - nazwa registry
-v\_hostname\_appserver - nazwa serwera aplikacyjnego
+    v\_access\_token - wcześniej wygenerowany token dla repozytorium
+
+    v_owner - nazwa właściciela repozytorium
+
+    v_repo - nazwa repozytorium
+
+    v\_runner\_dir - katalog gdzie będzie instalowany
+
+    v\_runner\_version - wersja runnera
+
+    v\_runner\_file - plik instalacyjny runnera
+
+    v\_runner\_file_chsum - funkcja skrótu dla pliku runnera
+
+    v\_registry\_username - nazwa użytkownika w prywatnym registry
+
+    v\_registry\_password - hasło dla użytkownika w prywatnym registry
+
+    v\_ip\_registry - adres prywatny vagrant dla registry
+
+    v\_ip\_appserver - adres prywatny vagrant dla serwera aplikacyjnego
+
+    v\_hostname\_registry - nazwa registry
+
+    v\_hostname\_appserver - nazwa serwera aplikacyjnego
 
 Parametry v\_hostname\_registry i v\_hostname\_appserver służą jako zastępstwo długich nazw DNS. Ponieważ nie ma dns, te wpisy dodawane są do /etc/hosts na obydwu maszynach.
 
 Plik potrzebne od provisioningu to:
+
 playbook_runner.yml dla Runnera
+
 playbook_appserver.yml dla serwera aplikacyjnego.
 
 Do uruchomienia środowiska potrzebny jest program Vagrant i Virtualbox. Rozwiązanie było testowane na wersjach:
 
 Vagrant 2.2.19
+
 Oracle VM VirtualBox VM Selector v6.1.36
 
 Krótka instrukcja:
@@ -77,8 +101,6 @@ Zainstalować plugin virtualbox
 
 Wgrać do katalogu plik Vagrant ze wszystkimi plikami ansible tj. playbook\_runner.yml, playbook\_appserver.yml i vars.yml.
 
-Dokonać korekt konfiguracji np. zmiany adresów sieciowych.
-
 Uruchomić provisioning
 
 `vagrant up --provision`
@@ -98,10 +120,13 @@ Podzielony na dwie fazy.
 Uruchamia się gdy zostanie zrobiona zmiana lub pull request na gałęzi master.
 
 1.  build, który wykorzystuje akcje:
+
     a. actions/checkout@v3
+
     b. mr-smithers-excellent/docker-build-push@v5
     
 2.  deploy:
+
     a. appleboy/ssh-action@master
     
     Mała uwaga: w polu host konieczne było podanie adresu, bo w przypadku nazwy próbował łączyć się z DNS.
