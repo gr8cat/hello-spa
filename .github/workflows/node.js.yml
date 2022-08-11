@@ -45,3 +45,4 @@ jobs:
             docker rm hello-spa
           fi
           docker run -d -p 8080:80 --name hello-spa registry.gr8cat.io:5000/hello-spa
+
